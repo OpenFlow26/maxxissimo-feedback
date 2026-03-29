@@ -1004,13 +1004,11 @@
     allResponses.push(response);
     localStorage.setItem('maxx_responses', JSON.stringify(allResponses));
 
-    // Invia a Google Sheets tramite GET (più affidabile con Apps Script)
+    // Invia a Google Sheets tramite img tag — bypassa CORS
     const params = new URLSearchParams();
-    Object.entries(response).forEach(([k, v]) => params.append(k, v));
-    fetch(SHEETS_URL + '?' + params.toString(), {
-      method: 'GET',
-      mode: 'no-cors'
-    }).catch(() => {});
+    Object.entries(response).forEach(([k, v]) => params.append(k, String(v)));
+    const img = new Image();
+    img.src = SHEETS_URL + '?' + params.toString();
 
     // Mostra thank you
     document.getElementById('step-7').classList.remove('active');
