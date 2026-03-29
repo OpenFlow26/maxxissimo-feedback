@@ -1004,13 +1004,13 @@
     allResponses.push(response);
     localStorage.setItem('maxx_responses', JSON.stringify(allResponses));
 
-    // Invia a Google Sheets
-    fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(response)
-    }).catch(() => {}); // silenzioso in caso di errore di rete
+    // Invia a Google Sheets tramite GET (più affidabile con Apps Script)
+    const params = new URLSearchParams();
+    Object.entries(response).forEach(([k, v]) => params.append(k, v));
+    fetch(SHEETS_URL + '?' + params.toString(), {
+      method: 'GET',
+      mode: 'no-cors'
+    }).catch(() => {});
 
     // Mostra thank you
     document.getElementById('step-7').classList.remove('active');
