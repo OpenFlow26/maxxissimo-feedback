@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maxxissimo – La tua voce conta</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --dark: #0A0A0A;
+    --dark-2: #111111;
+    --dark-3: #1A1A1A;
+    --dark-4: #242424;
+    --text: #F0EDE8;
+    --text-muted: #8A8580;
+    --border: rgba(201,168,76,0.2);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 90% 80%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .logo-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .logo-line {
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 6vw, 40px);
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .header h1 span {
+    color: var(--gold);
+  }
+
+  .header p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .progress-count {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--dark-4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Steps */
+  .step {
+    display: none;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .step.active { display: block; }
+
+  /* Question card */
+  .q-card {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .q-number {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .q-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  /* Options */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--dark-3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .option:hover {
+    border-color: var(--gold);
+    background: var(--dark-4);
+  }
+
+  .option.selected {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+
+  .option-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .option.selected .option-dot {
+    border-color: var(--gold);
+    background: var(--gold);
+  }
+
+  .option.selected .option-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--dark);
+    border-radius: 50%;
+  }
+
+  .option-label {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  /* Multi-select tick */
+  .option-tick {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .option.selected .option-tick {
+    border-color: var(--gold);
+    background: var(--gold);
+  }
+
+  .option.selected .option-tick::after {
+    content: '✓';
+    font-size: 11px;
+    color: var(--dark);
+    font-weight: 700;
+  }
+
+  /* Slider */
+  .slider-wrap {
+    margin-top: 20px;
+    padding: 0 4px;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .slider-label {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--dark-4);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 4px rgba(201,168,76,0.2);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 8px rgba(201,168,76,0.15);
+  }
+
+  .slider-value {
+    text-align: center;
+    margin-top: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .slider-value span {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    margin-left: 6px;
+  }
+
+  /* Textarea */
+  textarea {
+    width: 100%;
+    background: var(--dark-3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.6;
+    padding: 16px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-top: 16px;
+  }
+
+  textarea:focus {
+    border-color: var(--gold);
+  }
+
+  textarea::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Input text */
+  input[type="text"] {
+    width: 100%;
+    background: var(--dark-3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-top: 16px;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--gold);
+  }
+
+  input[type="text"]::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Nav buttons */
+  .nav {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    align-items: center;
+  }
+
+  .btn-back {
+    padding: 14px 20px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-back:hover {
+    border-color: rgba(255,255,255,0.25);
+    color: var(--text);
+  }
+
+  .btn-next {
+    flex: 1;
+    padding: 16px 24px;
+    background: var(--gold);
+    border: none;
+    border-radius: 10px;
+    color: var(--dark);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-next:hover {
+    background: var(--gold-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(201,168,76,0.25);
+  }
+
+  .btn-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Thank you screen */
+  .thankyou {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .thankyou.active { display: block; }
+
+  .ty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 28px;
+    font-size: 28px;
+  }
+
+  .thankyou h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .thankyou h2 span { color: var(--gold); }
+
+  .thankyou p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 0 auto 32px;
+  }
+
+  .ty-divider {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.4;
+    margin: 24px auto;
+  }
+
+  .ty-note {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Admin panel */
+  .admin-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: var(--dark-3);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 100;
+    transition: all 0.2s;
+  }
+
+  .admin-toggle:hover {
+    background: var(--dark-4);
+    border-color: var(--gold);
+  }
+
+  .admin-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .admin-panel.open { display: block; }
+
+  .admin-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .admin-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    color: var(--gold);
+  }
+
+  .admin-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: var(--dark-3);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .response-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .response-item {
+    background: var(--dark-3);
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 3px solid var(--gold);
+  }
+
+  .response-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .response-row {
+    margin-bottom: 10px;
+  }
+
+  .response-q {
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+
+  .response-a {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .btn-export {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: var(--dark-4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--gold);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-export:hover {
+    background: var(--gold-dim);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 480px) {
+    .wrapper { padding: 32px 16px 64px; }
+    .q-card { padding: 20px 16px; }
+    .admin-inner { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-mark">
+      <div class="logo-line"></div>
+      <div class="logo-text">Maxxissimo</div>
+      <div class="logo-line"></div>
+    </div>
+    <h1>La tua voce<br><span>costruisce le prossime live</span></h1>
+    <p>Tre minuti. Niente di giusto o sbagliato. Solo quello che senti tu.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-meta">
+      <span class="progress-label">Avanzamento</span>
+      <span class="progress-count" id="progressCount">1 / 7</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 14%"></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Da quanto tempo sei dentro -->
+  <div class="step active" id="step-1">
+    <div class="q-card">
+      <div class="q-number">Domanda 1</div>
+      <div class="q-text">Da quanto tempo segui Maxxissimo?</div>
+    </div>
+    <div class="options" id="opts-1">
+      <div class="option" data-val="Prime settimane" onclick="selectSingle(this, 'q1')">
+        <div class="option-dot"></div>
+        <div class="option-label">Sono nelle prime settimane</div>
+      </div>
+      <div class="option" data-val="Circa un mese" onclick="selectSingle(this, 'q1')">
+        <div class="option-dot"></div>
+        <div class="option-label">Sono dentro da circa un mese</div>
+      </div>
+      <div class="option" data-val="Seguo Max da prima di Maxxissimo" onclick="selectSingle(this, 'q1')">
+        <div class="option-dot"></div>
+        <div class="option-label">Seguo Max da prima del lancio di Maxxissimo</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-next" id="next-1" onclick="goNext(1)" disabled>Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Livello operativo -->
+  <div class="step" id="step-2">
+    <div class="q-card">
+      <div class="q-number">Domanda 2</div>
+      <div class="q-text">Come descriveresti il tuo livello operativo oggi?</div>
+      <div class="q-sub">Non c'è risposta giusta. Serve solo capire dove sei.</div>
+    </div>
+    <div class="options" id="opts-2">
+      <div class="option" data-val="Non ho ancora fatto operazioni" onclick="selectSingle(this, 'q2')">
+        <div class="option-dot"></div>
+        <div class="option-label">Non ho ancora fatto operazioni reali</div>
+      </div>
+      <div class="option" data-val="Poche operazioni, ancora insicuro" onclick="selectSingle(this, 'q2')">
+        <div class="option-dot"></div>
+        <div class="option-label">Ho fatto qualcosa ma mi sento ancora insicuro</div>
+      </div>
+      <div class="option" data-val="Operativo ma con alti e bassi" onclick="selectSingle(this, 'q2')">
+        <div class="option-dot"></div>
+        <div class="option-label">Sono operativo ma con alti e bassi emotivi</div>
+      </div>
+      <div class="option" data-val="Abbastanza stabile" onclick="selectSingle(this, 'q2')">
+        <div class="option-dot"></div>
+        <div class="option-label">Mi sento abbastanza stabile nel metodo</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(2)">←</button>
+      <button class="btn-next" id="next-2" onclick="goNext(2)" disabled>Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Il blocco principale -->
+  <div class="step" id="step-3">
+    <div class="q-card">
+      <div class="q-number">Domanda 3</div>
+      <div class="q-text">In questo momento, qual è la cosa che senti più difficile?</div>
+      <div class="q-sub">Puoi scegliere più di una risposta.</div>
+    </div>
+    <div class="options" id="opts-3">
+      <div class="option" data-val="Capire cosa sta succedendo nel mercato" onclick="selectMulti(this, 'q3')">
+        <div class="option-tick"></div>
+        <div class="option-label">Capire cosa sta succedendo nel mercato</div>
+      </div>
+      <div class="option" data-val="Gestire le emozioni durante le operazioni" onclick="selectMulti(this, 'q3')">
+        <div class="option-tick"></div>
+        <div class="option-label">Gestire le emozioni durante le operazioni</div>
+      </div>
+      <div class="option" data-val="Capire la size giusta" onclick="selectMulti(this, 'q3')">
+        <div class="option-tick"></div>
+        <div class="option-label">Capire la size giusta per il mio conto</div>
+      </div>
+      <div class="option" data-val="Avere pazienza e non agire d'impulso" onclick="selectMulti(this, 'q3')">
+        <div class="option-tick"></div>
+        <div class="option-label">Avere pazienza — l'impulso mi frega spesso</div>
+      </div>
+      <div class="option" data-val="Capire gli strumenti tecnici (broker, piattaforma)" onclick="selectMulti(this, 'q3')">
+        <div class="option-tick"></div>
+        <div class="option-label">Capire gli strumenti tecnici: broker, piattaforma, ordini</div>
+      </div>
+
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(3)">←</button>
+      <button class="btn-next" id="next-3" onclick="goNext(3)" disabled>Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Stato emotivo — slider -->
+  <div class="step" id="step-4">
+    <div class="q-card">
+      <div class="q-number">Domanda 4</div>
+      <div class="q-text">Come ti senti rispetto al percorso in questo momento?</div>
+      <div class="q-sub">Non rispetto ai mercati — rispetto a quello che stai imparando e costruendo.</div>
+    </div>
+    <div class="slider-wrap">
+      <div class="slider-labels">
+        <span class="slider-label">In difficoltà</span>
+        <span class="slider-label">In forma</span>
+      </div>
+      <input type="range" id="slider-mood" min="1" max="10" value="5"
+        oninput="updateSlider()" onchange="answers['q4'] = this.value; checkNext(4)">
+      <div class="slider-value" id="slider-display">5 <span>/ 10</span></div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(4)">←</button>
+      <button class="btn-next" id="next-4" onclick="goNext(4)">Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Cosa vuoi che le prossime live affrontino -->
+  <div class="step" id="step-5">
+    <div class="q-card">
+      <div class="q-number">Domanda 5</div>
+      <div class="q-text">Nelle prossime live, cosa vorresti vedere di più?</div>
+      <div class="q-sub">Puoi scegliere più di una risposta.</div>
+    </div>
+    <div class="options" id="opts-5">
+      <div class="option" data-val="Più psicologia e gestione emotiva" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Psicologia — capire i miei errori mentali e come uscirne</div>
+      </div>
+      <div class="option" data-val="Più operatività e lettura del mercato" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Operatività — leggere il mercato e capire le scelte di Max</div>
+      </div>
+      <div class="option" data-val="Più spiegazione sulle opzioni" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Opzioni — capire vertical spread, call, gestione del rischio</div>
+      </div>
+      <div class="option" data-val="Più esempi su size e money management" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Size e money management — esempi concreti sul mio conto</div>
+      </div>
+      <div class="option" data-val="Casi reali di errori e come si correggono" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Casi reali — errori, recuperi, decisioni difficili</div>
+      </div>
+      <div class="option" data-val="Come gestire momenti di mercato difficile" onclick="selectMulti(this, 'q5')">
+        <div class="option-tick"></div>
+        <div class="option-label">Come comportarsi quando il mercato è complicato</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(5)">←</button>
+      <button class="btn-next" id="next-5" onclick="goNext(5)" disabled>Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: La live coach -->
+  <div class="step" id="step-6">
+    <div class="q-card">
+      <div class="q-number">Domanda 6</div>
+      <div class="q-text">Le live con i coach — come le stai vivendo?</div>
+    </div>
+    <div class="options" id="opts-6">
+      <div class="option" data-val="Molto utili, ci torno volentieri" onclick="selectSingle(this, 'q6')">
+        <div class="option-dot"></div>
+        <div class="option-label">Molto utili — ci torno volentieri</div>
+      </div>
+      <div class="option" data-val="Utili ma vorrei più profondità" onclick="selectSingle(this, 'q6')">
+        <div class="option-dot"></div>
+        <div class="option-label">Utili ma vorrei più profondità su certi temi</div>
+      </div>
+      <div class="option" data-val="Fatico a seguire, mi sento indietro" onclick="selectSingle(this, 'q6')">
+        <div class="option-dot"></div>
+        <div class="option-label">Fatico a seguire — mi sento ancora un po' indietro</div>
+      </div>
+      <div class="option" data-val="Non riesco a partecipare regolarmente" onclick="selectSingle(this, 'q6')">
+        <div class="option-dot"></div>
+        <div class="option-label">Non riesco a seguirle regolarmente per questioni di orari</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(6)">←</button>
+      <button class="btn-next" id="next-6" onclick="goNext(6)" disabled>Avanti →</button>
+    </div>
+  </div>
+
+  <!-- STEP 7: Spazio libero -->
+  <div class="step" id="step-7">
+    <div class="q-card">
+      <div class="q-number">Domanda 7</div>
+      <div class="q-text">C'è qualcosa che vuoi dirci?</div>
+      <div class="q-sub">Una domanda specifica, qualcosa che ti pesa, un argomento che vorresti vedere. Facoltativo — ma se hai qualcosa da dire, questo è il posto giusto.</div>
+    </div>
+    <textarea id="freetext" rows="4" placeholder="Scrivi pure qui..."></textarea>
+    <div class="nav">
+      <button class="btn-back" onclick="goBack(7)">←</button>
+      <button class="btn-next" id="next-7" onclick="submitForm()">Invia →</button>
+    </div>
+  </div>
+
+  <!-- Thank you -->
+  <div class="thankyou" id="thankyou">
+    <div class="ty-icon">✦</div>
+    <h2>Ricevuto.<br><span>Grazie davvero.</span></h2>
+    <p>Quello che hai scritto entra direttamente nella costruzione delle prossime live. Non finisce in un cassetto.</p>
+    <div class="ty-divider"></div>
+    <div class="ty-note">A presto — il team Maxxissimo</div>
+  </div>
+
+</div>
+
+<!-- Admin toggle -->
+<div class="admin-toggle" onclick="toggleAdmin()" title="Vedi risposte">📊</div>
+
+<!-- Admin panel -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-inner">
+    <div class="admin-header">
+      <h3>Risposte raccolte</h3>
+      <button class="admin-close" onclick="toggleAdmin()">✕</button>
+    </div>
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="response-list" id="responseList"></div>
+    <button class="btn-export" onclick="exportCSV()">⬇ Esporta CSV</button>
+  </div>
+</div>
+
+<script>
+  const TOTAL_STEPS = 7;
+  let currentStep = 1;
+  let answers = { q4: '5' }; // slider default
+  let multiAnswers = { q3: [], q5: [] };
+  let allResponses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
+
+  const questions = {
+    q1: 'Da quanto sei dentro',
+    q2: 'Livello operativo',
+    q3: 'Cosa trovi difficile',
+    q4: 'Stato emotivo (1-10)',
+    q5: 'Cosa vuoi nelle prossime live',
+    q6: 'Come vivi le live coach',
+    q7: 'Messaggio libero'
+  };
+
+  function selectSingle(el, key) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    answers[key] = el.dataset.val;
+    checkNext(parseInt(el.closest('.step').id.split('-')[1]));
+  }
+
+  function selectMulti(el, key) {
+    el.classList.toggle('selected');
+    const stepNum = parseInt(el.closest('.step').id.split('-')[1]);
+    const selected = el.closest('.options').querySelectorAll('.option.selected');
+    multiAnswers[key] = Array.from(selected).map(o => o.dataset.val);
+    answers[key] = multiAnswers[key].join(' | ');
+    checkNext(stepNum);
+  }
+
+  function checkNext(stepNum) {
+    const btn = document.getElementById('next-' + stepNum);
+    if (!btn) return;
+    const key = 'q' + stepNum;
+    const hasAnswer = answers[key] && answers[key].length > 0;
+    btn.disabled = !hasAnswer;
+  }
+
+  function updateSlider() {
+    const val = document.getElementById('slider-mood').value;
+    document.getElementById('slider-display').innerHTML = val + ' <span>/ 10</span>';
+    answers['q4'] = val;
+  }
+
+  function goNext(from) {
+    const current = document.getElementById('step-' + from);
+    const next = document.getElementById('step-' + (from + 1));
+    if (!next) return;
+    current.classList.remove('active');
+    next.classList.add('active');
+    currentStep = from + 1;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goBack(from) {
+    const current = document.getElementById('step-' + from);
+    const prev = document.getElementById('step-' + (from - 1));
+    if (!prev) return;
+    current.classList.remove('active');
+    prev.classList.add('active');
+    currentStep = from - 1;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    const pct = (currentStep / TOTAL_STEPS) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = currentStep + ' / ' + TOTAL_STEPS;
+  }
+
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby8oglXoUcCnRIPYn7C1wJ1flr7WRDfM6XQkdD-XvSDD9BTDb9wj5PDOP-WbJV7MySq/exec';
+
+  function submitForm() {
+    answers['q7'] = document.getElementById('freetext').value || '—';
+    const response = {
+      timestamp: new Date().toLocaleString('it-IT'),
+      ...answers
+    };
+
+    // Salva localmente
+    allResponses.push(response);
+    localStorage.setItem('maxx_responses', JSON.stringify(allResponses));
+
+    // Invia a Google Sheets
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(response)
+    }).catch(() => {}); // silenzioso in caso di errore di rete
+
+    // Mostra thank you
+    document.getElementById('step-7').classList.remove('active');
+    document.getElementById('progressWrap').style.display = 'none';
+    document.getElementById('thankyou').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleAdmin() {
+    const panel = document.getElementById('adminPanel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) renderAdmin();
+  }
+
+  function renderAdmin() {
+    const responses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
+    
+    // Stats
+    document.getElementById('adminStats').innerHTML = `
+      <div class="stat-box">
+        <div class="stat-num">${responses.length}</div>
+        <div class="stat-lbl">Risposte</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">${getMoodAvg(responses)}</div>
+        <div class="stat-lbl">Umore medio</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">${getTopBlock(responses)}</div>
+        <div class="stat-lbl">Blocco più comune</div>
+      </div>
+    `;
+
+    if (responses.length === 0) {
+      document.getElementById('responseList').innerHTML = '<div class="empty-state">Nessuna risposta ancora. Il form è pronto — condividilo.</div>';
+      return;
+    }
+
+    document.getElementById('responseList').innerHTML = responses.map((r, i) => `
+      <div class="response-item">
+        <div class="response-meta">#${i+1} — ${r.timestamp}</div>
+        ${Object.entries(questions).map(([k, label]) => r[k] ? `
+          <div class="response-row">
+            <div class="response-q">${label}</div>
+            <div class="response-a">${r[k]}</div>
+          </div>
+        ` : '').join('')}
+      </div>
+    `).reverse().join('');
+  }
+
+  function getMoodAvg(responses) {
+    if (!responses.length) return '—';
+    const avg = responses.reduce((s, r) => s + (parseInt(r.q4) || 5), 0) / responses.length;
+    return avg.toFixed(1);
+  }
+
+  function getTopBlock(responses) {
+    if (!responses.length) return '—';
+    const freq = {};
+    responses.forEach(r => {
+      if (r.q3) r.q3.split(' | ').forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    });
+    const top = Object.entries(freq).sort((a,b) => b[1]-a[1])[0];
+    if (!top) return '—';
+    const short = top[0].split(' ')[0] + '...';
+    return short;
+  }
+
+  function exportCSV() {
+    const responses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
+    if (!responses.length) return alert('Nessuna risposta da esportare.');
+    const keys = Object.keys(questions);
+    const header = ['Timestamp', ...Object.values(questions)].join(';');
+    const rows = responses.map(r => [r.timestamp, ...keys.map(k => '"' + (r[k] || '') + '"')].join(';'));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'maxxissimo-feedback.csv'; a.click();
+  }
+
+  // Init slider
+  updateSlider();
+  checkNext(4);
+</script>
+
+</body>
+</html>
