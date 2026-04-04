@@ -552,6 +552,7 @@
   <div class="header-meta">
     <div class="status-dot" id="api-dot" style="background:var(--warn);box-shadow:0 0 8px var(--warn)"></div>
     <div class="clock" id="clock">--:--:--</div>
+    <button class="btn-add" id="sync-btn" onclick="syncMT4()" style="font-size:10px; color:var(--accent); border-color:rgba(0,212,170,0.4)">⟳ Sync MT4</button>
     <button class="btn-add" onclick="toggleApiPanel()" id="api-btn" style="font-size:10px; color:var(--warn); border-color:rgba(240,160,32,0.4)">⚙ API Key</button>
   </div>
 </header>
@@ -566,6 +567,14 @@
   <span style="font-size:10px; color:var(--text3); white-space:nowrap;">Salvata solo nel browser</span>
   <a href="https://console.anthropic.com/settings/keys" target="_blank"
     style="font-size:10px; color:var(--accent); text-decoration:none; white-space:nowrap;">Ottieni key →</a>
+
+  <span style="font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; margin-left:16px;">GitHub PAT</span>
+  <input id="github-pat-input" type="password"
+    placeholder="ghp_..."
+    style="flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:3px; color:var(--text); font-family:var(--mono); font-size:12px; padding:7px 12px; outline:none; min-width:200px;"
+    oninput="saveGithubPat(this.value)">
+  <span style="font-size:10px; color:var(--text3); white-space:nowrap;">Per leggere i dati MT4</span>
+
   <button class="btn-add" onclick="toggleApiPanel()" style="font-size:10px">✕ Chiudi</button>
 </div>
 
@@ -1218,6 +1227,82 @@ function renderLog() {
   ).join('');
 }
 
+function getGithubPat() {
+  return localStorage.getItem('crp_github_pat') || '';
+}
+
+function saveGithubPat(val) {
+  localStorage.setItem('crp_github_pat', val.trim());
+}
+
+async function syncMT4() {
+  const btn = document.getElementById('sync-btn');
+  const pat = getGithubPat();
+
+  if(!pat) {
+    addLog('GitHub PAT mancante — clicca ⚙ API Key per inserirlo', 'err');
+    toggleApiPanel();
+    return;
+  }
+
+  btn.textContent = '...';
+  btn.disabled = true;
+  addLog('Sincronizzazione MT4 in corso...', '');
+
+  try {
+    const url = 'https://api.github.com/repos/OpenFlow26/cfd-lab/contents/data/mt4_export.json';
+    const resp = await fetch(url, {
+      headers: {
+        'Authorization': 'token ' + pat,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if(!resp.ok) throw new Error('HTTP ' + resp.status + ' — verifica il PAT e che il file esista su GitHub');
+
+    const data = await resp.json();
+    const json = JSON.parse(atob(data.content.replace(/\n/g, '')));
+
+    // Aggiorna o crea la card Demo Live con i dati MT4
+    const demo = load('demo');
+    const existing = demo.findIndex(d => d.ea === 'MT4_Auto' && d.broker === 'Skilling');
+
+    const record = {
+      id:       existing >= 0 ? demo[existing].id : uid(),
+      symbol:   'Multi',
+      tf:       'Multi',
+      ea:       'MT4_Auto',
+      broker:   'Skilling',
+      data:     json.exportDate || new Date().toISOString().slice(0,10),
+      pnl:      (json.today && json.today.pl !== undefined) ? (json.today.pl >= 0 ? '+' : '') + json.today.pl.toFixed(2) : '—',
+      trade:    (json.today && json.today.trades !== undefined) ? String(json.today.trades) : '—',
+      winrate:  (json.today && json.today.winRatePct !== undefined) ? json.today.winRatePct.toFixed(1) + '%' : '—',
+      note:     'Sync automatico da MT4 VPS. '
+              + 'Balance: ' + (json.account ? json.account.balance.toFixed(2) : '—')
+              + ' | Equity: ' + (json.account ? json.account.equity.toFixed(2) : '—')
+              + ' | DD: ' + (json.account ? json.account.drawdownPct.toFixed(2) + '%' : '—')
+              + ' | Export: ' + (json.exportTime || '—')
+    };
+
+    if(existing >= 0) demo[existing] = record;
+    else demo.push(record);
+    save('demo', demo);
+
+    // Salva anche i trade aperti per gli insights
+    save('mt4_open_trades', json.openTrades || []);
+    save('mt4_closed_today', json.closedToday || []);
+
+    render();
+    addLog('Sync MT4 OK — ' + (json.today ? json.today.trades : 0) + ' trade oggi, P&L ' + (json.today ? json.today.pl.toFixed(2) : '—'), 'ok');
+
+  } catch(e) {
+    addLog('Sync MT4 fallita: ' + e.message, 'err');
+  }
+
+  btn.textContent = '⟳ Sync MT4';
+  btn.disabled = false;
+}
+
 // ===================== API KEY =====================
 function getApiKey() {
   return localStorage.getItem('crp_api_key') || '';
@@ -1248,9 +1333,14 @@ function updateApiStatus() {
 function toggleApiPanel() {
   const panel = document.getElementById('api-panel');
   const input = document.getElementById('api-key-input');
+  const gitInput = document.getElementById('github-pat-input');
   const isOpen = panel.style.display === 'flex';
   panel.style.display = isOpen ? 'none' : 'flex';
-  if(!isOpen) { input.value = getApiKey(); setTimeout(()=>input.focus(),50); }
+  if(!isOpen) {
+    input.value = getApiKey();
+    gitInput.value = getGithubPat();
+    setTimeout(()=>input.focus(), 50);
+  }
 }
 
 // ===================== CLOCK =====================
@@ -1268,5 +1358,4 @@ updateApiStatus();
 </script>
 </body>
 </html>
-    
 
