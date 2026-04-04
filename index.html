@@ -550,10 +550,23 @@
 <header>
   <div class="logo">CFD <span>Regime</span> Profiler</div>
   <div class="header-meta">
-    <div class="status-dot"></div>
+    <div class="status-dot" id="api-dot" style="background:var(--text3);box-shadow:none"></div>
     <div class="clock" id="clock">--:--:--</div>
+    <button class="btn-add" onclick="toggleApiPanel()" id="api-btn" style="font-size:10px">⚙ API Key</button>
   </div>
 </header>
+
+<!-- API KEY PANEL -->
+<div id="api-panel" style="display:none; background:var(--bg2); border-bottom:1px solid var(--border); padding:12px 32px; align-items:center; gap:12px; position:relative; z-index:99;">
+  <span style="font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap;">Anthropic API Key</span>
+  <input id="api-key-input" type="password"
+    placeholder="sk-ant-api03-..."
+    style="flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:3px; color:var(--text); font-family:var(--mono); font-size:12px; padding:7px 12px; outline:none; min-width:0;"
+    oninput="saveApiKey(this.value)">
+  <span style="font-size:10px; color:var(--text3); white-space:nowrap;">Salvata solo nel browser · non viene trasmessa ad altri</span>
+  <a href="https://console.anthropic.com/settings/keys" target="_blank"
+    style="font-size:10px; color:var(--accent); text-decoration:none; white-space:nowrap;">Ottieni key →</a>
+</div>
 
 <div class="main">
 
@@ -963,6 +976,14 @@ async function sendToAgent() {
   btn.disabled = true;
   btn.textContent = '...';
 
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    addLog('API key mancante — clicca ⚙ API Key in alto', 'err');
+    btn.disabled = false; btn.textContent = 'Aggiorna →';
+    toggleApiPanel();
+    return;
+  }
+
   const context = {
     backtest: load('backtest'),
     demo: load('demo'),
@@ -999,7 +1020,12 @@ Rispondi SOLO con il JSON, niente altro.`;
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -1008,6 +1034,7 @@ Rispondi SOLO con il JSON, niente altro.`;
     });
 
     const data = await resp.json();
+    if(data.error) throw new Error(data.error.message);
     const raw = data.content[0].text.trim();
     const clean = raw.replace(/```json|```/g,'').trim();
     const result = JSON.parse(clean);
@@ -1058,6 +1085,14 @@ async function generateInsights() {
   btn.textContent = '...';
   body.innerHTML = '<div class="insights-loading"><div class="spinner"></div>Analisi in corso...</div>';
 
+  const apiKey = getApiKey();
+  if(!apiKey) {
+    body.innerHTML = '<div class="empty-state">API key mancante.<br>Clicca ⚙ API Key in alto per inserirla.</div>';
+    btn.disabled = false; btn.textContent = '⟳ Analizza';
+    toggleApiPanel();
+    return;
+  }
+
   const prompt = `Sei un analista quantitativo esperto di trading sistematico CFD. Stai analizzando il laboratorio di Andrea, trader italiano esperto che usa il metodo Unger Academy combinato con l'esponente di Hurst per classificare il regime di mercato.
 
 METODOLOGIA:
@@ -1097,7 +1132,12 @@ Rispondi SOLO con questo JSON, niente altro:
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
@@ -1106,6 +1146,7 @@ Rispondi SOLO con questo JSON, niente altro:
     });
 
     const data = await resp.json();
+    if(data.error) throw new Error(data.error.message);
     const raw = data.content[0].text.trim().replace(/```json|```/g,'').trim();
     const result = JSON.parse(raw);
 
@@ -1176,6 +1217,41 @@ function renderLog() {
   ).join('');
 }
 
+// ===================== API KEY =====================
+function getApiKey() {
+  return localStorage.getItem('crp_api_key') || '';
+}
+
+function saveApiKey(val) {
+  localStorage.setItem('crp_api_key', val.trim());
+  updateApiStatus();
+}
+
+function updateApiStatus() {
+  const key = getApiKey();
+  const dot = document.getElementById('api-dot');
+  const btn = document.getElementById('api-btn');
+  if(key && key.startsWith('sk-ant')) {
+    dot.style.background = 'var(--green)';
+    dot.style.boxShadow = '0 0 8px var(--green)';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'rgba(48,208,128,0.4)';
+  } else {
+    dot.style.background = 'var(--warn)';
+    dot.style.boxShadow = '0 0 8px var(--warn)';
+    btn.style.color = 'var(--warn)';
+    btn.style.borderColor = 'rgba(240,160,32,0.4)';
+  }
+}
+
+function toggleApiPanel() {
+  const panel = document.getElementById('api-panel');
+  const input = document.getElementById('api-key-input');
+  const isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  if(!isOpen) { input.value = getApiKey(); input.focus(); }
+}
+
 // ===================== CLOCK =====================
 function updateClock() {
   document.getElementById('clock').textContent = new Date().toLocaleTimeString('it-IT');
@@ -1187,6 +1263,9 @@ updateClock();
 render();
 renderLog();
 renderInsights();
+updateApiStatus();
 </script>
 </body>
 </html>
+    
+
