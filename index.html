@@ -3,1098 +3,1190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maxxissimo – La tua voce conta</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<title>CFD Regime Profiler — Lab Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --gold-dim: rgba(201,168,76,0.15);
-    --dark: #0A0A0A;
-    --dark-2: #111111;
-    --dark-3: #1A1A1A;
-    --dark-4: #242424;
-    --text: #F0EDE8;
-    --text-muted: #8A8580;
-    --border: rgba(201,168,76,0.2);
-    --radius: 12px;
+    --bg: #0a0c0f;
+    --bg2: #111318;
+    --bg3: #181c23;
+    --border: #1e2530;
+    --border2: #2a3340;
+    --text: #c8d4e0;
+    --text2: #6a7d90;
+    --text3: #3a4a58;
+    --accent: #00d4aa;
+    --accent2: #0099cc;
+    --warn: #f0a020;
+    --danger: #e04050;
+    --green: #30d080;
+    --purple: #9060f0;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--dark);
+    background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
+    font-family: var(--mono);
+    font-size: 13px;
     min-height: 100vh;
-    padding: 0;
     overflow-x: hidden;
   }
 
-  /* Background texture */
+  /* GRID NOISE BACKGROUND */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: 
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 30% at 90% 80%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
     pointer-events: none;
     z-index: 0;
   }
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
+  .app { position: relative; z-index: 1; }
 
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 48px;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .logo-mark {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
-
-  .logo-line {
-    width: 32px;
-    height: 1px;
-    background: var(--gold);
-    opacity: 0.6;
-  }
-
-  .logo-text {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    text-transform: uppercase;
-  }
-
-  .header h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: clamp(28px, 6vw, 40px);
-    line-height: 1.15;
-    color: var(--text);
-    margin-bottom: 16px;
-  }
-
-  .header h1 span {
-    color: var(--gold);
-  }
-
-  .header p {
-    font-size: 15px;
-    line-height: 1.7;
-    color: var(--text-muted);
-    max-width: 420px;
-    margin: 0 auto;
-  }
-
-  /* Progress bar */
-  .progress-wrap {
-    margin-bottom: 40px;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-
-  .progress-meta {
+  /* HEADER */
+  header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,15,0.95);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .logo {
+    font-family: var(--sans);
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .clock { color: var(--text2); font-size: 11px; }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 1px;
+    background: var(--border);
+    min-height: calc(100vh - 61px);
+  }
+
+  /* SECTIONS */
+  .section {
+    background: var(--bg);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .section.two-col {
+    grid-column: span 2;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+
+  .section-title {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .section-body {
+    padding: 16px 20px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 320px;
+  }
+
+  .section-body::-webkit-scrollbar { width: 3px; }
+  .section-body::-webkit-scrollbar-track { background: transparent; }
+  .section-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* ADD BUTTON */
+  .btn-add {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card:last-child { margin-bottom: 0; }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 8px;
   }
 
-  .progress-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .progress-count {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    color: var(--gold);
+  .card-symbol {
+    font-family: var(--sans);
     font-weight: 600;
+    font-size: 13px;
+    color: #fff;
   }
 
-  .progress-bar {
-    height: 2px;
-    background: var(--dark-4);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light));
-    border-radius: 2px;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Steps */
-  .step {
-    display: none;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .step.active { display: block; }
-
-  /* Question card */
-  .q-card {
-    background: var(--dark-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-    margin-bottom: 16px;
-  }
-
-  .q-number {
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+  .badge {
+    font-size: 9px;
     font-weight: 500;
-    margin-bottom: 10px;
-  }
-
-  .q-text {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(16px, 4vw, 20px);
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .q-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 0;
-  }
-
-  /* Options */
-  .options {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
-  .option {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
-    background: var(--dark-3);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
-  }
-
-  .option:hover {
-    border-color: var(--gold);
-    background: var(--dark-4);
-  }
-
-  .option.selected {
-    border-color: var(--gold);
-    background: var(--gold-dim);
-  }
-
-  .option-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255,255,255,0.2);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .option.selected .option-dot {
-    border-color: var(--gold);
-    background: var(--gold);
-  }
-
-  .option.selected .option-dot::after {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: var(--dark);
-    border-radius: 50%;
-  }
-
-  .option-label {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--text);
-  }
-
-  /* Multi-select tick */
-  .option-tick {
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    border: 1.5px solid rgba(255,255,255,0.2);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .option.selected .option-tick {
-    border-color: var(--gold);
-    background: var(--gold);
-  }
-
-  .option.selected .option-tick::after {
-    content: '✓';
-    font-size: 11px;
-    color: var(--dark);
-    font-weight: 700;
-  }
-
-  /* Slider */
-  .slider-wrap {
-    margin-top: 20px;
-    padding: 0 4px;
-  }
-
-  .slider-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-
-  .slider-label {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    background: var(--dark-4);
+    padding: 2px 7px;
     border-radius: 2px;
-    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .badge-progress { background: rgba(0,212,170,0.12); color: var(--accent); border: 1px solid rgba(0,212,170,0.25); }
+  .badge-demo { background: rgba(144,96,240,0.12); color: var(--purple); border: 1px solid rgba(144,96,240,0.25); }
+  .badge-live { background: rgba(48,208,128,0.12); color: var(--green); border: 1px solid rgba(48,208,128,0.25); }
+  .badge-fail { background: rgba(224,64,80,0.12); color: var(--danger); border: 1px solid rgba(224,64,80,0.25); }
+  .badge-review { background: rgba(240,160,32,0.12); color: var(--warn); border: 1px solid rgba(240,160,32,0.25); }
+  .badge-pass { background: rgba(48,208,128,0.12); color: var(--green); border: 1px solid rgba(48,208,128,0.25); }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .meta-item { }
+  .meta-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .meta-value { font-size: 12px; color: var(--text); }
+  .meta-value.good { color: var(--green); }
+  .meta-value.bad { color: var(--danger); }
+  .meta-value.warn { color: var(--warn); }
+
+  .card-note {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    gap: 4px;
+  }
+  .card:hover .card-actions { display: flex; }
+
+  .btn-icon {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    width: 22px; height: 22px;
+    border-radius: 3px;
     cursor: pointer;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
   }
+  .btn-icon:hover { color: var(--danger); border-color: var(--danger); }
 
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 0 4px rgba(201,168,76,0.2);
-    cursor: pointer;
-    transition: box-shadow 0.2s;
+  /* HURST MATRIX */
+  .hurst-table {
+    width: 100%;
+    border-collapse: collapse;
   }
-
-  input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 0 8px rgba(201,168,76,0.15);
-  }
-
-  .slider-value {
+  .hurst-table th {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    padding: 6px 10px;
     text-align: center;
-    margin-top: 14px;
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--gold);
+    border-bottom: 1px solid var(--border);
+  }
+  .hurst-table td {
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .hurst-table tr:last-child td { border-bottom: none; }
+  .hurst-table td:first-child { text-align: left; color: #fff; font-weight: 500; }
+
+  .hurst-cell {
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 44px;
+  }
+  .h-trend { background: rgba(0,212,170,0.12); color: var(--accent); }
+  .h-mean  { background: rgba(224,64,80,0.12); color: var(--danger); }
+  .h-neutral { background: rgba(240,160,32,0.12); color: var(--warn); }
+  .h-empty { color: var(--text3); }
+
+  /* PIPELINE */
+  .pipeline-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pipeline-item:last-child { border-bottom: none; }
+  .pipeline-rank { color: var(--text3); font-size: 11px; min-width: 20px; }
+  .pipeline-info { flex: 1; }
+  .pipeline-name { color: var(--text); font-size: 12px; margin-bottom: 2px; }
+  .pipeline-sub { color: var(--text2); font-size: 10px; }
+
+  /* AI AGENT */
+  .agent-section {
+    grid-column: 1 / -1;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
   }
 
-  .slider-value span {
-    font-size: 14px;
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
-    margin-left: 6px;
+  .agent-header {
+    padding: 14px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  /* Textarea */
-  textarea {
-    width: 100%;
-    background: var(--dark-3);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.6;
-    padding: 16px;
-    resize: none;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-top: 16px;
+  .agent-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
   }
 
-  textarea:focus {
-    border-color: var(--gold);
-  }
-
-  textarea::placeholder {
-    color: var(--text-muted);
-  }
-
-  /* Input text */
-  input[type="text"] {
-    width: 100%;
-    background: var(--dark-3);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
-    padding: 14px 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-top: 16px;
-  }
-
-  input[type="text"]:focus {
-    border-color: var(--gold);
-  }
-
-  input[type="text"]::placeholder {
-    color: var(--text-muted);
-  }
-
-  /* Nav buttons */
-  .nav {
+  .agent-body {
+    padding: 16px 20px;
     display: flex;
     gap: 12px;
-    margin-top: 24px;
-    align-items: center;
+    align-items: flex-start;
   }
 
-  .btn-back {
-    padding: 14px 20px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-
-  .btn-back:hover {
-    border-color: rgba(255,255,255,0.25);
-    color: var(--text);
-  }
-
-  .btn-next {
+  .agent-input {
     flex: 1;
-    padding: 16px 24px;
-    background: var(--gold);
-    border: none;
-    border-radius: 10px;
-    color: var(--dark);
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.03em;
-  }
-
-  .btn-next:hover {
-    background: var(--gold-light);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(201,168,76,0.25);
-  }
-
-  .btn-next:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  /* Thank you screen */
-  .thankyou {
-    display: none;
-    text-align: center;
-    padding: 20px 0;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .thankyou.active { display: block; }
-
-  .ty-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: var(--gold-dim);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 28px;
-    font-size: 28px;
-  }
-
-  .thankyou h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(24px, 5vw, 32px);
-    font-weight: 700;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
     color: var(--text);
-    margin-bottom: 16px;
-  }
-
-  .thankyou h2 span { color: var(--gold); }
-
-  .thankyou p {
-    font-size: 15px;
-    color: var(--text-muted);
-    line-height: 1.7;
-    max-width: 380px;
-    margin: 0 auto 32px;
-  }
-
-  .ty-divider {
-    width: 48px;
-    height: 1px;
-    background: var(--gold);
-    opacity: 0.4;
-    margin: 24px auto;
-  }
-
-  .ty-note {
+    font-family: var(--mono);
     font-size: 13px;
-    color: var(--text-muted);
-    font-style: italic;
+    padding: 10px 14px;
+    resize: none;
+    height: 60px;
+    transition: border-color 0.15s;
+    outline: none;
   }
+  .agent-input:focus { border-color: var(--accent); }
+  .agent-input::placeholder { color: var(--text3); }
 
-  /* Admin panel */
-  .admin-toggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
-    background: var(--dark-3);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .agent-send {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 20px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 18px;
-    z-index: 100;
-    transition: all 0.2s;
+    height: 60px;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .agent-send:hover { opacity: 0.85; }
+  .agent-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .agent-log {
+    padding: 0 20px 16px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .log-entry {
+    font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+  }
+  .log-time { color: var(--text3); min-width: 50px; }
+  .log-msg { color: var(--text2); }
+  .log-msg.ok { color: var(--green); }
+  .log-msg.err { color: var(--danger); }
+
+  .insight-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .insight-card.warn { border-left-color: var(--warn); }
+  .insight-card.danger { border-left-color: var(--danger); }
+  .insight-card.purple { border-left-color: var(--purple); }
+  .insight-card.green { border-left-color: var(--green); }
+
+  .insight-icon { font-size: 16px; min-width: 20px; margin-top: 1px; }
+  .insight-body { flex: 1; }
+  .insight-title { color: #fff; font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+  .insight-text { color: var(--text2); font-size: 11px; line-height: 1.6; }
+  .insight-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .tag-opportunity { background: rgba(0,212,170,0.1); color: var(--accent); }
+  .tag-warning { background: rgba(240,160,32,0.1); color: var(--warn); }
+  .tag-action { background: rgba(144,96,240,0.1); color: var(--purple); }
+  .tag-stop { background: rgba(224,64,80,0.1); color: var(--danger); }
+  .tag-info { background: rgba(100,120,140,0.1); color: var(--text2); }
+
+  .insights-loading {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--text2); font-size: 11px; padding: 16px 0;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .insights-meta {
+    font-size: 10px; color: var(--text3);
+    padding: 8px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
   }
 
-  .admin-toggle:hover {
-    background: var(--dark-4);
-    border-color: var(--gold);
-  }
 
-  .admin-panel {
+  .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 200;
-    padding: 24px;
-    overflow-y: auto;
-  }
-
-  .admin-panel.open { display: block; }
-
-  .admin-inner {
-    max-width: 800px;
-    margin: 0 auto;
-    background: var(--dark-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px;
-  }
-
-  .admin-header {
-    display: flex;
-    justify-content: space-between;
+    background: rgba(0,0,0,0.75);
+    z-index: 999;
     align-items: center;
-    margin-bottom: 28px;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 24px;
+    width: 480px;
+    max-width: 95vw;
   }
 
-  .admin-header h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    color: var(--gold);
-  }
-
-  .admin-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 22px;
-    cursor: pointer;
-    padding: 4px 8px;
-  }
-
-  .admin-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    margin-bottom: 28px;
-  }
-
-  .stat-box {
-    background: var(--dark-3);
-    border-radius: 10px;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .stat-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--gold);
-  }
-
-  .stat-lbl {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .response-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .response-item {
-    background: var(--dark-3);
-    border-radius: 10px;
-    padding: 20px;
-    border-left: 3px solid var(--gold);
-  }
-
-  .response-meta {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    letter-spacing: 0.05em;
-  }
-
-  .response-row {
-    margin-bottom: 10px;
-  }
-
-  .response-q {
-    font-size: 11px;
-    color: var(--gold);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 3px;
-  }
-
-  .response-a {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.5;
-  }
-
-  .btn-export {
-    width: 100%;
-    margin-top: 20px;
-    padding: 14px;
-    background: var(--dark-4);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--gold);
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
+  .modal-title {
+    font-family: var(--sans);
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 20px;
   }
 
-  .btn-export:hover {
-    background: var(--gold-dim);
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-select { appearance: none; cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 60px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .btn-save {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 20px;
+    border-radius: 3px;
+    cursor: pointer;
   }
 
   .empty-state {
+    color: var(--text3);
+    font-size: 11px;
     text-align: center;
-    padding: 48px 24px;
-    color: var(--text-muted);
-    font-size: 14px;
+    padding: 24px 0;
+    line-height: 1.8;
   }
 
-  /* Animations */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Mobile tweaks */
-  @media (max-width: 480px) {
-    .wrapper { padding: 32px 16px 64px; }
-    .q-card { padding: 20px 16px; }
-    .admin-inner { padding: 20px 16px; }
+  /* COUNTER BADGES */
+  .count-badge {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
   }
 </style>
 </head>
 <body>
+<div class="app">
 
-<div class="wrapper">
-
-  <!-- Header -->
-  <div class="header">
-    <div class="logo-mark">
-      <div class="logo-line"></div>
-      <div class="logo-text">Maxxissimo</div>
-      <div class="logo-line"></div>
-    </div>
-    <h1>La tua voce<br><span>costruisce le prossime live</span></h1>
-    <p>Tre minuti. Niente di giusto o sbagliato. Solo quello che senti tu.</p>
+<header>
+  <div class="logo">CFD <span>Regime</span> Profiler</div>
+  <div class="header-meta">
+    <div class="status-dot"></div>
+    <div class="clock" id="clock">--:--:--</div>
   </div>
+</header>
 
-  <!-- Progress -->
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-meta">
-      <span class="progress-label">Avanzamento</span>
-      <span class="progress-count" id="progressCount">1 / 7</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width: 14%"></div>
-    </div>
-  </div>
+<div class="main">
 
-  <!-- STEP 1: Da quanto tempo sei dentro -->
-  <div class="step active" id="step-1">
-    <div class="q-card">
-      <div class="q-number">Domanda 1</div>
-      <div class="q-text">Da quanto tempo segui Maxxissimo?</div>
+  <!-- BACKTEST IN CORSO -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Backtest in corso <span class="count-badge" id="cnt-bt">0</span></div>
+      <button class="btn-add" onclick="openModal('backtest')">+ Aggiungi</button>
     </div>
-    <div class="options" id="opts-1">
-      <div class="option" data-val="Prime settimane" onclick="selectSingle(this, 'q1')">
-        <div class="option-dot"></div>
-        <div class="option-label">Sono nelle prime settimane</div>
-      </div>
-      <div class="option" data-val="Circa un mese" onclick="selectSingle(this, 'q1')">
-        <div class="option-dot"></div>
-        <div class="option-label">Sono dentro da circa un mese</div>
-      </div>
-      <div class="option" data-val="Seguo Max da prima di Maxxissimo" onclick="selectSingle(this, 'q1')">
-        <div class="option-dot"></div>
-        <div class="option-label">Seguo Max da prima del lancio di Maxxissimo</div>
-      </div>
+    <div class="section-body" id="list-backtest">
+      <div class="empty-state">Nessun backtest in corso.<br>Clicca + per aggiungere.</div>
     </div>
-    <div class="nav">
-      <button class="btn-next" id="next-1" onclick="goNext(1)" disabled>Avanti →</button>
-    </div>
-  </div>
+  </section>
 
-  <!-- STEP 2: Livello operativo -->
-  <div class="step" id="step-2">
-    <div class="q-card">
-      <div class="q-number">Domanda 2</div>
-      <div class="q-text">Come descriveresti il tuo livello operativo oggi?</div>
-      <div class="q-sub">Non c'è risposta giusta. Serve solo capire dove sei.</div>
+  <!-- STRATEGIE IN DEMO -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Demo live <span class="count-badge" id="cnt-demo">0</span></div>
+      <button class="btn-add" onclick="openModal('demo')">+ Aggiungi</button>
     </div>
-    <div class="options" id="opts-2">
-      <div class="option" data-val="Non ho ancora fatto operazioni" onclick="selectSingle(this, 'q2')">
-        <div class="option-dot"></div>
-        <div class="option-label">Non ho ancora fatto operazioni reali</div>
-      </div>
-      <div class="option" data-val="Poche operazioni, ancora insicuro" onclick="selectSingle(this, 'q2')">
-        <div class="option-dot"></div>
-        <div class="option-label">Ho fatto qualcosa ma mi sento ancora insicuro</div>
-      </div>
-      <div class="option" data-val="Operativo ma con alti e bassi" onclick="selectSingle(this, 'q2')">
-        <div class="option-dot"></div>
-        <div class="option-label">Sono operativo ma con alti e bassi emotivi</div>
-      </div>
-      <div class="option" data-val="Abbastanza stabile" onclick="selectSingle(this, 'q2')">
-        <div class="option-dot"></div>
-        <div class="option-label">Mi sento abbastanza stabile nel metodo</div>
-      </div>
+    <div class="section-body" id="list-demo">
+      <div class="empty-state">Nessuna strategia in demo.<br>Clicca + per aggiungere.</div>
     </div>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(2)">←</button>
-      <button class="btn-next" id="next-2" onclick="goNext(2)" disabled>Avanti →</button>
-    </div>
-  </div>
+  </section>
 
-  <!-- STEP 3: Il blocco principale -->
-  <div class="step" id="step-3">
-    <div class="q-card">
-      <div class="q-number">Domanda 3</div>
-      <div class="q-text">In questo momento, qual è la cosa che senti più difficile?</div>
-      <div class="q-sub">Puoi scegliere più di una risposta.</div>
+  <!-- PIPELINE -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Pipeline <span class="count-badge" id="cnt-pipe">0</span></div>
+      <button class="btn-add" onclick="openModal('pipeline')">+ Aggiungi</button>
     </div>
-    <div class="options" id="opts-3">
-      <div class="option" data-val="Capire cosa sta succedendo nel mercato" onclick="selectMulti(this, 'q3')">
-        <div class="option-tick"></div>
-        <div class="option-label">Capire cosa sta succedendo nel mercato</div>
-      </div>
-      <div class="option" data-val="Gestire le emozioni durante le operazioni" onclick="selectMulti(this, 'q3')">
-        <div class="option-tick"></div>
-        <div class="option-label">Gestire le emozioni durante le operazioni</div>
-      </div>
-      <div class="option" data-val="Capire la size giusta" onclick="selectMulti(this, 'q3')">
-        <div class="option-tick"></div>
-        <div class="option-label">Capire la size giusta per il mio conto</div>
-      </div>
-      <div class="option" data-val="Avere pazienza e non agire d'impulso" onclick="selectMulti(this, 'q3')">
-        <div class="option-tick"></div>
-        <div class="option-label">Avere pazienza — l'impulso mi frega spesso</div>
-      </div>
-      <div class="option" data-val="Capire gli strumenti tecnici (broker, piattaforma)" onclick="selectMulti(this, 'q3')">
-        <div class="option-tick"></div>
-        <div class="option-label">Capire gli strumenti tecnici: broker, piattaforma, ordini</div>
-      </div>
+    <div class="section-body" id="list-pipeline">
+      <div class="empty-state">Pipeline vuota.</div>
+    </div>
+  </section>
 
+  <!-- RISULTATI BACKTEST -->
+  <section class="section two-col">
+    <div class="section-header">
+      <div class="section-title">Risultati backtest <span class="count-badge" id="cnt-res">0</span></div>
+      <button class="btn-add" onclick="openModal('risultato')">+ Aggiungi</button>
     </div>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(3)">←</button>
-      <button class="btn-next" id="next-3" onclick="goNext(3)" disabled>Avanti →</button>
+    <div class="section-body" id="list-risultati">
+      <div class="empty-state">Nessun risultato ancora.<br>Aggiungi dopo ogni backtest completato.</div>
     </div>
-  </div>
+  </section>
 
-  <!-- STEP 4: Stato emotivo — slider -->
-  <div class="step" id="step-4">
-    <div class="q-card">
-      <div class="q-number">Domanda 4</div>
-      <div class="q-text">Come ti senti rispetto al percorso in questo momento?</div>
-      <div class="q-sub">Non rispetto ai mercati — rispetto a quello che stai imparando e costruendo.</div>
+  <!-- HURST MATRIX -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-title">Regime Hurst</div>
+      <button class="btn-add" onclick="openModal('hurst')">Aggiorna</button>
     </div>
-    <div class="slider-wrap">
-      <div class="slider-labels">
-        <span class="slider-label">In difficoltà</span>
-        <span class="slider-label">In forma</span>
-      </div>
-      <input type="range" id="slider-mood" min="1" max="10" value="5"
-        oninput="updateSlider()" onchange="answers['q4'] = this.value; checkNext(4)">
-      <div class="slider-value" id="slider-display">5 <span>/ 10</span></div>
+    <div class="section-body" style="padding:0; max-height:320px;">
+      <table class="hurst-table" id="hurst-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Strumento</th>
+            <th>M5</th><th>M15</th><th>M30</th><th>H1</th>
+          </tr>
+        </thead>
+        <tbody id="hurst-body">
+          <tr><td colspan="5" style="text-align:center; color:var(--text3); padding:20px; font-size:11px;">Nessun dato Hurst.<br>Inserisci dopo la profilazione Python.</td></tr>
+        </tbody>
+      </table>
     </div>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(4)">←</button>
-      <button class="btn-next" id="next-4" onclick="goNext(4)">Avanti →</button>
-    </div>
-  </div>
+  </section>
 
-  <!-- STEP 5: Cosa vuoi che le prossime live affrontino -->
-  <div class="step" id="step-5">
-    <div class="q-card">
-      <div class="q-number">Domanda 5</div>
-      <div class="q-text">Nelle prossime live, cosa vorresti vedere di più?</div>
-      <div class="q-sub">Puoi scegliere più di una risposta.</div>
+  <!-- INSIGHTS -->
+  <section class="section full-width" id="insights-section" style="border-top:1px solid var(--border)">
+    <div class="section-header">
+      <div class="section-title">Insights <span class="count-badge" id="cnt-insights">0</span></div>
+      <button class="btn-add" id="insights-btn" onclick="generateInsights()">⟳ Analizza</button>
     </div>
-    <div class="options" id="opts-5">
-      <div class="option" data-val="Più psicologia e gestione emotiva" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Psicologia — capire i miei errori mentali e come uscirne</div>
-      </div>
-      <div class="option" data-val="Più operatività e lettura del mercato" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Operatività — leggere il mercato e capire le scelte di Max</div>
-      </div>
-      <div class="option" data-val="Più spiegazione sulle opzioni" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Opzioni — capire vertical spread, call, gestione del rischio</div>
-      </div>
-      <div class="option" data-val="Più esempi su size e money management" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Size e money management — esempi concreti sul mio conto</div>
-      </div>
-      <div class="option" data-val="Casi reali di errori e come si correggono" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Casi reali — errori, recuperi, decisioni difficili</div>
-      </div>
-      <div class="option" data-val="Come gestire momenti di mercato difficile" onclick="selectMulti(this, 'q5')">
-        <div class="option-tick"></div>
-        <div class="option-label">Come comportarsi quando il mercato è complicato</div>
-      </div>
+    <div class="section-body" id="insights-body" style="max-height:260px;">
+      <div class="empty-state">Nessun insight ancora.<br>Clicca "Analizza" dopo aver inserito dati nelle altre sezioni.</div>
     </div>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(5)">←</button>
-      <button class="btn-next" id="next-5" onclick="goNext(5)" disabled>Avanti →</button>
-    </div>
-  </div>
+  </section>
 
-  <!-- STEP 6: La live coach -->
-  <div class="step" id="step-6">
-    <div class="q-card">
-      <div class="q-number">Domanda 6</div>
-      <div class="q-text">Le live con i coach — come le stai vivendo?</div>
+  <!-- AI AGENT -->
+  <section class="section full-width agent-section">
+    <div class="agent-header">
+      <div class="status-dot" style="background:var(--accent); box-shadow:0 0 8px var(--accent)"></div>
+      <div class="agent-label">Agente AI — aggiorna la dashboard in linguaggio naturale</div>
     </div>
-    <div class="options" id="opts-6">
-      <div class="option" data-val="Molto utili, ci torno volentieri" onclick="selectSingle(this, 'q6')">
-        <div class="option-dot"></div>
-        <div class="option-label">Molto utili — ci torno volentieri</div>
-      </div>
-      <div class="option" data-val="Utili ma vorrei più profondità" onclick="selectSingle(this, 'q6')">
-        <div class="option-dot"></div>
-        <div class="option-label">Utili ma vorrei più profondità su certi temi</div>
-      </div>
-      <div class="option" data-val="Fatico a seguire, mi sento indietro" onclick="selectSingle(this, 'q6')">
-        <div class="option-dot"></div>
-        <div class="option-label">Fatico a seguire — mi sento ancora un po' indietro</div>
-      </div>
-      <div class="option" data-val="Non riesco a partecipare regolarmente" onclick="selectSingle(this, 'q6')">
-        <div class="option-dot"></div>
-        <div class="option-label">Non riesco a seguirle regolarmente per questioni di orari</div>
-      </div>
+    <div class="agent-body">
+      <textarea class="agent-input" id="agent-input" placeholder='Es: "Ho finito il backtest DAX TF Simple M5, profit factor 1.45, 92 trade, max DD 8%, passa" oppure "Aggiungi Gold M15 alla pipeline, da testare con Reversal BB"'></textarea>
+      <button class="agent-send" id="agent-btn" onclick="sendToAgent()">Aggiorna →</button>
     </div>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(6)">←</button>
-      <button class="btn-next" id="next-6" onclick="goNext(6)" disabled>Avanti →</button>
-    </div>
-  </div>
-
-  <!-- STEP 7: Spazio libero -->
-  <div class="step" id="step-7">
-    <div class="q-card">
-      <div class="q-number">Domanda 7</div>
-      <div class="q-text">C'è qualcosa che vuoi dirci?</div>
-      <div class="q-sub">Una domanda specifica, qualcosa che ti pesa, un argomento che vorresti vedere. Facoltativo — ma se hai qualcosa da dire, questo è il posto giusto.</div>
-    </div>
-    <textarea id="freetext" rows="4" placeholder="Scrivi pure qui..."></textarea>
-    <div class="nav">
-      <button class="btn-back" onclick="goBack(7)">←</button>
-      <button class="btn-next" id="next-7" onclick="submitForm()">Invia →</button>
-    </div>
-  </div>
-
-  <!-- Thank you -->
-  <div class="thankyou" id="thankyou">
-    <div class="ty-icon">✦</div>
-    <h2>Ricevuto.<br><span>Grazie davvero.</span></h2>
-    <p>Quello che hai scritto entra direttamente nella costruzione delle prossime live. Non finisce in un cassetto.</p>
-    <div class="ty-divider"></div>
-    <div class="ty-note">A presto — il team Maxxissimo</div>
-  </div>
+    <div class="agent-log" id="agent-log"></div>
+  </section>
 
 </div>
 
-<!-- Admin toggle -->
-<div class="admin-toggle" onclick="toggleAdmin()" title="Vedi risposte">📊</div>
-
-<!-- Admin panel -->
-<div class="admin-panel" id="adminPanel">
-  <div class="admin-inner">
-    <div class="admin-header">
-      <h3>Risposte raccolte</h3>
-      <button class="admin-close" onclick="toggleAdmin()">✕</button>
-    </div>
-    <div class="admin-stats" id="adminStats"></div>
-    <div class="response-list" id="responseList"></div>
-    <button class="btn-export" onclick="exportCSV()">⬇ Esporta CSV</button>
-  </div>
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal-content"></div>
 </div>
 
 <script>
-  const TOTAL_STEPS = 7;
-  let currentStep = 1;
-  let answers = { q4: '5' }; // slider default
-  let multiAnswers = { q3: [], q5: [] };
-  let allResponses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
+// ===================== DATA STORE =====================
+const KEYS = { backtest:'crp_backtest', demo:'crp_demo', pipeline:'crp_pipeline', risultati:'crp_risultati', hurst:'crp_hurst', log:'crp_log' };
 
-  const questions = {
-    q1: 'Da quanto sei dentro',
-    q2: 'Livello operativo',
-    q3: 'Cosa trovi difficile',
-    q4: 'Stato emotivo (1-10)',
-    q5: 'Cosa vuoi nelle prossime live',
-    q6: 'Come vivi le live coach',
-    q7: 'Messaggio libero'
+function load(k) { try { return JSON.parse(localStorage.getItem(KEYS[k])) || []; } catch(e) { return []; } }
+function save(k, d) { localStorage.setItem(KEYS[k], JSON.stringify(d)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+// ===================== RENDER =====================
+function render() {
+  renderBacktest();
+  renderDemo();
+  renderPipeline();
+  renderRisultati();
+  renderHurst();
+}
+
+function renderBacktest() {
+  const data = load('backtest');
+  const el = document.getElementById('list-backtest');
+  document.getElementById('cnt-bt').textContent = data.length;
+  if(!data.length) { el.innerHTML = '<div class="empty-state">Nessun backtest in corso.<br>Clicca + per aggiungere.</div>'; return; }
+  el.innerHTML = data.map(d => `
+    <div class="card">
+      <div class="card-top">
+        <div class="card-symbol">${d.symbol} <span style="color:var(--text2);font-weight:400;font-size:11px">${d.tf}</span></div>
+        <span class="badge badge-progress">${d.stato}</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Strategia</div><div class="meta-value">${d.strategia}</div></div>
+        <div class="meta-item"><div class="meta-label">Iniziato</div><div class="meta-value">${d.data}</div></div>
+        <div class="meta-item"><div class="meta-label">Tipo</div><div class="meta-value">${d.tipo||'—'}</div></div>
+      </div>
+      ${d.note ? `<div class="card-note">${d.note}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn-icon" onclick="deleteItem('backtest','${d.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderDemo() {
+  const data = load('demo');
+  const el = document.getElementById('list-demo');
+  document.getElementById('cnt-demo').textContent = data.length;
+  if(!data.length) { el.innerHTML = '<div class="empty-state">Nessuna strategia in demo.</div>'; return; }
+  el.innerHTML = data.map(d => `
+    <div class="card">
+      <div class="card-top">
+        <div class="card-symbol">${d.symbol} <span style="color:var(--text2);font-weight:400;font-size:11px">${d.tf}</span></div>
+        <span class="badge badge-demo">DEMO</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">EA</div><div class="meta-value">${d.ea}</div></div>
+        <div class="meta-item"><div class="meta-label">Dal</div><div class="meta-value">${d.data}</div></div>
+        <div class="meta-item"><div class="meta-label">Trade</div><div class="meta-value">${d.trade||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">P&L</div><div class="meta-value ${parseFloat(d.pnl)>=0?'good':'bad'}">${d.pnl||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Win%</div><div class="meta-value">${d.winrate||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Broker</div><div class="meta-value">${d.broker||'Skilling'}</div></div>
+      </div>
+      ${d.note ? `<div class="card-note">${d.note}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn-icon" onclick="deleteItem('demo','${d.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderPipeline() {
+  const data = load('pipeline');
+  const el = document.getElementById('list-pipeline');
+  document.getElementById('cnt-pipe').textContent = data.length;
+  if(!data.length) { el.innerHTML = '<div class="empty-state">Pipeline vuota.</div>'; return; }
+  el.innerHTML = data.map((d,i) => `
+    <div class="pipeline-item">
+      <div class="pipeline-rank">${String(i+1).padStart(2,'0')}</div>
+      <div class="pipeline-info">
+        <div class="pipeline-name">${d.symbol} ${d.tf} — ${d.strategia}</div>
+        <div class="pipeline-sub">${d.motivo||''}</div>
+      </div>
+      <span class="badge ${d.priorita==='alta'?'badge-live':d.priorita==='media'?'badge-review':'badge-progress'}">${d.priorita||'—'}</span>
+      <button class="btn-icon" onclick="deleteItem('pipeline','${d.id}')">✕</button>
+    </div>`).join('');
+}
+
+function renderRisultati() {
+  const data = load('risultati');
+  const el = document.getElementById('list-risultati');
+  document.getElementById('cnt-res').textContent = data.length;
+  if(!data.length) { el.innerHTML = '<div class="empty-state">Nessun risultato ancora.</div>'; return; }
+  el.innerHTML = data.map(d => {
+    const pf = parseFloat(d.pf);
+    const pfClass = pf >= 1.5 ? 'good' : pf >= 1.3 ? 'warn' : 'bad';
+    const esito = d.esito === 'pass' ? 'badge-pass' : d.esito === 'review' ? 'badge-review' : 'badge-fail';
+    return `<div class="card">
+      <div class="card-top">
+        <div class="card-symbol">${d.symbol} <span style="color:var(--text2);font-weight:400;font-size:11px">${d.tf} · ${d.strategia}</span></div>
+        <span class="badge ${esito}">${d.esito?.toUpperCase()||'—'}</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Profit Factor</div><div class="meta-value ${pfClass}">${d.pf||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Trade</div><div class="meta-value">${d.trade||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Max DD</div><div class="meta-value ${parseFloat(d.dd)>15?'bad':parseFloat(d.dd)>8?'warn':'good'}">${d.dd||'—'}%</div></div>
+        <div class="meta-item"><div class="meta-label">Win%</div><div class="meta-value">${d.winrate||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Hurst</div><div class="meta-value">${d.hurst||'—'}</div></div>
+        <div class="meta-item"><div class="meta-label">Data</div><div class="meta-value">${d.data||'—'}</div></div>
+      </div>
+      ${d.note ? `<div class="card-note">${d.note}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn-icon" onclick="deleteItem('risultati','${d.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHurst() {
+  const data = load('hurst');
+  const tbody = document.getElementById('hurst-body');
+  if(!data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;font-size:11px;">Nessun dato Hurst.<br>Inserisci dopo la profilazione Python.</td></tr>';
+    return;
+  }
+  const tfs = ['M5','M15','M30','H1'];
+  tbody.innerHTML = data.map(row => `
+    <tr>
+      <td>${row.symbol}</td>
+      ${tfs.map(tf => {
+        const v = row[tf];
+        if(!v) return `<td><span class="hurst-cell h-empty">—</span></td>`;
+        const n = parseFloat(v);
+        const cls = n > 0.55 ? 'h-trend' : n < 0.45 ? 'h-mean' : 'h-neutral';
+        return `<td><span class="hurst-cell ${cls}">${v}</span></td>`;
+      }).join('')}
+    </tr>`).join('');
+}
+
+// ===================== DELETE =====================
+function deleteItem(section, id) {
+  const data = load(section).filter(d => d.id !== id);
+  save(section, data);
+  render();
+  addLog(`Elemento rimosso da ${section}.`);
+}
+
+// ===================== MODAL =====================
+const modalTemplates = {
+  backtest: () => `
+    <div class="modal-title">Backtest in corso</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Simbolo</label><input class="form-input" id="f-symbol" placeholder="DAX, GOLD, NQ..."></div>
+      <div class="form-group"><label class="form-label">Timeframe</label><select class="form-select" id="f-tf"><option>M5</option><option>M10</option><option>M15</option><option>M30</option><option>H1</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Strategia</label><input class="form-input" id="f-strategia" placeholder="UA_TF_Simple, Reversal_BB..."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Stato</label><input class="form-input" id="f-stato" value="In corso"></div>
+      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="f-tipo"><option>Trend Following</option><option>Mean Reversion</option><option>BIAS</option><option>Breakout</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Data inizio</label><input class="form-input" id="f-data" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="f-note" placeholder="Pattern usati, parametri, osservazioni..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="saveBacktest()">Salva</button>
+    </div>`,
+
+  demo: () => `
+    <div class="modal-title">Strategia in demo</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Simbolo</label><input class="form-input" id="f-symbol" placeholder="DAX, GOLD..."></div>
+      <div class="form-group"><label class="form-label">Timeframe</label><select class="form-select" id="f-tf"><option>M5</option><option>M10</option><option>M15</option><option>M30</option><option>H1</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Nome EA</label><input class="form-input" id="f-ea" placeholder="DAX_TF_Simple, Gold_Reversal..."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dal</label><input class="form-input" id="f-data" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="form-group"><label class="form-label">Broker</label><input class="form-input" id="f-broker" value="Skilling"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">P&L attuale</label><input class="form-input" id="f-pnl" placeholder="+120 / -45..."></div>
+      <div class="form-group"><label class="form-label">N. trade</label><input class="form-input" id="f-trade" placeholder="12"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Win rate</label><input class="form-input" id="f-winrate" placeholder="55%"></div>
+    <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="f-note" placeholder="Osservazioni..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="saveDemo()">Salva</button>
+    </div>`,
+
+  pipeline: () => `
+    <div class="modal-title">Aggiungi alla pipeline</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Simbolo</label><input class="form-input" id="f-symbol" placeholder="DAX, GOLD, NQ..."></div>
+      <div class="form-group"><label class="form-label">Timeframe</label><select class="form-select" id="f-tf"><option>M5</option><option>M10</option><option>M15</option><option>M30</option><option>H1</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Strategia</label><input class="form-input" id="f-strategia" placeholder="UA_Reversal_BB, UA_TrendDeveloper..."></div>
+    <div class="form-group"><label class="form-label">Priorità</label><select class="form-select" id="f-priorita"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="bassa">Bassa</option></select></div>
+    <div class="form-group"><label class="form-label">Motivo / note</label><textarea class="form-textarea" id="f-motivo" placeholder="Hurst 0.38 su M15, da testare con Reversal_BB..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="savePipeline()">Salva</button>
+    </div>`,
+
+  risultato: () => `
+    <div class="modal-title">Risultato backtest</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Simbolo</label><input class="form-input" id="f-symbol" placeholder="DAX, GOLD..."></div>
+      <div class="form-group"><label class="form-label">Timeframe</label><select class="form-select" id="f-tf"><option>M5</option><option>M10</option><option>M15</option><option>M30</option><option>H1</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Strategia</label><input class="form-input" id="f-strategia" placeholder="UA_TF_Simple..."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Profit Factor</label><input class="form-input" id="f-pf" placeholder="1.45"></div>
+      <div class="form-group"><label class="form-label">N. trade</label><input class="form-input" id="f-trade" placeholder="92"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Max DD %</label><input class="form-input" id="f-dd" placeholder="8.5"></div>
+      <div class="form-group"><label class="form-label">Win rate</label><input class="form-input" id="f-winrate" placeholder="52%"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Hurst medio</label><input class="form-input" id="f-hurst" placeholder="0.62"></div>
+      <div class="form-group"><label class="form-label">Esito</label><select class="form-select" id="f-esito"><option value="pass">PASS</option><option value="review">REVIEW</option><option value="fail">FAIL</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="f-data" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="form-group"><label class="form-label">Note</label><textarea class="form-textarea" id="f-note" placeholder="Osservazioni, prossimi step..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="saveRisultato()">Salva</button>
+    </div>`,
+
+  hurst: () => `
+    <div class="modal-title">Aggiorna regime Hurst</div>
+    <div class="form-group"><label class="form-label">Simbolo</label><input class="form-input" id="f-symbol" placeholder="GOLD, DAX, NQ..."></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">M5</label><input class="form-input" id="f-m5" placeholder="0.62"></div>
+      <div class="form-group"><label class="form-label">M15</label><input class="form-input" id="f-m15" placeholder="0.58"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">M30</label><input class="form-input" id="f-m30" placeholder="0.44"></div>
+      <div class="form-group"><label class="form-label">H1</label><input class="form-input" id="f-h1" placeholder="0.39"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="saveHurst()">Salva</button>
+    </div>`
+};
+
+let currentModal = null;
+
+function openModal(type) {
+  currentModal = type;
+  document.getElementById('modal-content').innerHTML = modalTemplates[type]();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  currentModal = null;
+}
+
+function closeModalOutside(e) {
+  if(e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ===================== SAVE FUNCTIONS =====================
+function g(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function saveBacktest() {
+  const d = { id:uid(), symbol:g('f-symbol'), tf:g('f-tf'), strategia:g('f-strategia'), stato:g('f-stato'), tipo:g('f-tipo'), data:g('f-data'), note:g('f-note') };
+  if(!d.symbol) return;
+  const arr = load('backtest'); arr.push(d); save('backtest', arr);
+  closeModal(); render(); addLog(`Backtest aggiunto: ${d.symbol} ${d.tf} — ${d.strategia}`, 'ok');
+}
+
+function saveDemo() {
+  const d = { id:uid(), symbol:g('f-symbol'), tf:g('f-tf'), ea:g('f-ea'), data:g('f-data'), broker:g('f-broker'), pnl:g('f-pnl'), trade:g('f-trade'), winrate:g('f-winrate'), note:g('f-note') };
+  if(!d.symbol) return;
+  const arr = load('demo'); arr.push(d); save('demo', arr);
+  closeModal(); render(); addLog(`Demo aggiunta: ${d.ea} su ${d.symbol} ${d.tf}`, 'ok');
+}
+
+function savePipeline() {
+  const d = { id:uid(), symbol:g('f-symbol'), tf:g('f-tf'), strategia:g('f-strategia'), priorita:g('f-priorita'), motivo:g('f-motivo') };
+  if(!d.symbol) return;
+  const arr = load('pipeline'); arr.push(d); save('pipeline', arr);
+  closeModal(); render(); addLog(`Pipeline: ${d.symbol} ${d.tf} — ${d.strategia} [${d.priorita}]`, 'ok');
+}
+
+function saveRisultato() {
+  const d = { id:uid(), symbol:g('f-symbol'), tf:g('f-tf'), strategia:g('f-strategia'), pf:g('f-pf'), trade:g('f-trade'), dd:g('f-dd'), winrate:g('f-winrate'), hurst:g('f-hurst'), esito:g('f-esito'), data:g('f-data'), note:g('f-note') };
+  if(!d.symbol) return;
+  const arr = load('risultati'); arr.push(d); save('risultati', arr);
+  closeModal(); render(); addLog(`Risultato: ${d.symbol} ${d.tf} PF=${d.pf} → ${d.esito?.toUpperCase()}`, 'ok');
+}
+
+function saveHurst() {
+  const symbol = g('f-symbol').toUpperCase();
+  if(!symbol) return;
+  const arr = load('hurst');
+  const idx = arr.findIndex(r => r.symbol === symbol);
+  const row = { symbol, M5:g('f-m5'), M15:g('f-m15'), M30:g('f-m30'), H1:g('f-h1') };
+  if(idx >= 0) arr[idx] = row; else arr.push(row);
+  save('hurst', arr);
+  closeModal(); render(); addLog(`Hurst aggiornato: ${symbol}`, 'ok');
+}
+
+// ===================== AI AGENT =====================
+async function sendToAgent() {
+  const input = document.getElementById('agent-input');
+  const btn = document.getElementById('agent-btn');
+  const text = input.value.trim();
+  if(!text) return;
+
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const context = {
+    backtest: load('backtest'),
+    demo: load('demo'),
+    pipeline: load('pipeline'),
+    risultati: load('risultati'),
+    hurst: load('hurst')
   };
 
-  function selectSingle(el, key) {
-    const parent = el.parentElement;
-    parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    answers[key] = el.dataset.val;
-    checkNext(parseInt(el.closest('.step').id.split('-')[1]));
-  }
+  const prompt = `Sei l'agente della dashboard "CFD Regime Profiler" di Andrea, trader di CFD.
+La dashboard ha 5 sezioni: backtest (in corso), demo (live su MT4), pipeline (prossimi da testare), risultati (backtest completati), hurst (matrice Hurst per strumento/timeframe).
 
-  function selectMulti(el, key) {
-    el.classList.toggle('selected');
-    const stepNum = parseInt(el.closest('.step').id.split('-')[1]);
-    const selected = el.closest('.options').querySelectorAll('.option.selected');
-    multiAnswers[key] = Array.from(selected).map(o => o.dataset.val);
-    answers[key] = multiAnswers[key].join(' | ');
-    checkNext(stepNum);
-  }
+Stato attuale:
+${JSON.stringify(context, null, 2)}
 
-  function checkNext(stepNum) {
-    const btn = document.getElementById('next-' + stepNum);
-    if (!btn) return;
-    const key = 'q' + stepNum;
-    const hasAnswer = answers[key] && answers[key].length > 0;
-    btn.disabled = !hasAnswer;
-  }
+Messaggio di Andrea: "${text}"
 
-  function updateSlider() {
-    const val = document.getElementById('slider-mood').value;
-    document.getElementById('slider-display').innerHTML = val + ' <span>/ 10</span>';
-    answers['q4'] = val;
-  }
+Analizza il messaggio e rispondi con un JSON con questa struttura esatta:
+{
+  "azione": "descrizione breve di cosa hai fatto",
+  "sezione": "backtest|demo|pipeline|risultati|hurst|nessuna",
+  "operazione": "aggiungi|aggiorna|elimina|nessuna",
+  "dati": { ... oggetto con i campi rilevanti estratti dal messaggio ... }
+}
 
-  function goNext(from) {
-    const current = document.getElementById('step-' + from);
-    const next = document.getElementById('step-' + (from + 1));
-    if (!next) return;
-    current.classList.remove('active');
-    next.classList.add('active');
-    currentStep = from + 1;
-    updateProgress();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+Campi disponibili per sezione:
+- backtest: symbol, tf, strategia, stato, tipo, data, note
+- demo: symbol, tf, ea, data, broker, pnl, trade, winrate, note
+- pipeline: symbol, tf, strategia, priorita (alta/media/bassa), motivo
+- risultati: symbol, tf, strategia, pf, trade, dd, winrate, hurst, esito (pass/review/fail), data, note
+- hurst: symbol, M5, M15, M30, H1
 
-  function goBack(from) {
-    const current = document.getElementById('step-' + from);
-    const prev = document.getElementById('step-' + (from - 1));
-    if (!prev) return;
-    current.classList.remove('active');
-    prev.classList.add('active');
-    currentStep = from - 1;
-    updateProgress();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+Rispondi SOLO con il JSON, niente altro.`;
 
-  function updateProgress() {
-    const pct = (currentStep / TOTAL_STEPS) * 100;
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressCount').textContent = currentStep + ' / ' + TOTAL_STEPS;
-  }
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
 
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycby8oglXoUcCnRIPYn7C1wJ1flr7WRDfM6XQkdD-XvSDD9BTDb9wj5PDOP-WbJV7MySq/exec';
+    const data = await resp.json();
+    const raw = data.content[0].text.trim();
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
 
-  function submitForm() {
-    answers['q7'] = document.getElementById('freetext').value || '—';
-    const response = {
-      timestamp: new Date().toLocaleString('it-IT'),
-      ...answers
-    };
-
-    // Salva localmente
-    allResponses.push(response);
-    localStorage.setItem('maxx_responses', JSON.stringify(allResponses));
-
-    // Invia a Google Sheets tramite img tag — bypassa CORS
-    const params = new URLSearchParams();
-    Object.entries(response).forEach(([k, v]) => params.append(k, String(v)));
-    const img = new Image();
-    img.src = SHEETS_URL + '?' + params.toString();
-
-    // Mostra thank you
-    document.getElementById('step-7').classList.remove('active');
-    document.getElementById('progressWrap').style.display = 'none';
-    document.getElementById('thankyou').classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function toggleAdmin() {
-    const panel = document.getElementById('adminPanel');
-    panel.classList.toggle('open');
-    if (panel.classList.contains('open')) renderAdmin();
-  }
-
-  function renderAdmin() {
-    const responses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
-    
-    // Stats
-    document.getElementById('adminStats').innerHTML = `
-      <div class="stat-box">
-        <div class="stat-num">${responses.length}</div>
-        <div class="stat-lbl">Risposte</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num">${getMoodAvg(responses)}</div>
-        <div class="stat-lbl">Umore medio</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-num">${getTopBlock(responses)}</div>
-        <div class="stat-lbl">Blocco più comune</div>
-      </div>
-    `;
-
-    if (responses.length === 0) {
-      document.getElementById('responseList').innerHTML = '<div class="empty-state">Nessuna risposta ancora. Il form è pronto — condividilo.</div>';
-      return;
+    if(result.sezione !== 'nessuna' && result.operazione === 'aggiungi' && result.dati) {
+      const arr = load(result.sezione);
+      arr.push({ id: uid(), data: new Date().toISOString().slice(0,10), ...result.dati });
+      save(result.sezione, arr);
+      render();
     }
 
-    document.getElementById('responseList').innerHTML = responses.map((r, i) => `
-      <div class="response-item">
-        <div class="response-meta">#${i+1} — ${r.timestamp}</div>
-        ${Object.entries(questions).map(([k, label]) => r[k] ? `
-          <div class="response-row">
-            <div class="response-q">${label}</div>
-            <div class="response-a">${r[k]}</div>
-          </div>
-        ` : '').join('')}
-      </div>
-    `).reverse().join('');
+    addLog(result.azione || 'Fatto.', 'ok');
+    input.value = '';
+
+  } catch(e) {
+    addLog('Errore agente: ' + e.message, 'err');
   }
 
-  function getMoodAvg(responses) {
-    if (!responses.length) return '—';
-    const avg = responses.reduce((s, r) => s + (parseInt(r.q4) || 5), 0) / responses.length;
-    return avg.toFixed(1);
+  btn.disabled = false;
+  btn.textContent = 'Aggiorna →';
+}
+
+// Invia con Ctrl+Enter
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('agent-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && e.ctrlKey) sendToAgent();
+  });
+});
+
+// ===================== INSIGHTS =====================
+async function generateInsights() {
+  const btn = document.getElementById('insights-btn');
+  const body = document.getElementById('insights-body');
+
+  const backtest = load('backtest');
+  const demo = load('demo');
+  const pipeline = load('pipeline');
+  const risultati = load('risultati');
+  const hurst = load('hurst');
+
+  const totDati = backtest.length + demo.length + risultati.length + hurst.length;
+  if(totDati === 0) {
+    body.innerHTML = '<div class="empty-state">Inserisci prima dei dati nelle altre sezioni.</div>';
+    return;
   }
 
-  function getTopBlock(responses) {
-    if (!responses.length) return '—';
-    const freq = {};
-    responses.forEach(r => {
-      if (r.q3) r.q3.split(' | ').forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+  btn.disabled = true;
+  btn.textContent = '...';
+  body.innerHTML = '<div class="insights-loading"><div class="spinner"></div>Analisi in corso...</div>';
+
+  const prompt = `Sei un analista quantitativo esperto di trading sistematico CFD. Stai analizzando il laboratorio di Andrea, trader italiano esperto che usa il metodo Unger Academy combinato con l'esponente di Hurst per classificare il regime di mercato.
+
+METODOLOGIA:
+- Hurst > 0.55 = trending → strategie Trend Following (UA_Mirrored_TF, UA_TrendDeveloper, UA_brkHighsNLowsN)
+- Hurst 0.45-0.55 = neutro/random → BIAS o evitare
+- Hurst < 0.45 = mean reverting → strategie Reversal (UA_Reversal_BB, UA_LevelFader)
+- Criteri pass backtest: Profit Factor > 1.3, minimo 100 trade, Max DD accettabile < 20%
+
+DATI ATTUALI DEL LAB:
+Backtest in corso: ${JSON.stringify(backtest)}
+Strategie in demo: ${JSON.stringify(demo)}
+Risultati backtest completati: ${JSON.stringify(risultati)}
+Pipeline (da testare): ${JSON.stringify(pipeline)}
+Matrice Hurst: ${JSON.stringify(hurst)}
+
+Analizza tutto e produci da 3 a 6 insights concreti e utili. Pensa a:
+- EA che funzionano su più strumenti (opportunità di diversificazione)
+- EA in demo che stanno sottoperformando rispetto al backtest (possibile regime change)
+- Strumenti con Hurst favorevole ma nessuna strategia ancora testata (gap da colmare)
+- Risultati fail o review che suggeriscono riformulazione
+- Pattern tra strumenti simili (es. Gold e Silver si comportano spesso allo stesso modo)
+- Prossima cosa concreta da fare in ordine di priorità
+
+Rispondi SOLO con questo JSON, niente altro:
+{
+  "insights": [
+    {
+      "tipo": "opportunity|warning|action|stop|info",
+      "titolo": "Titolo breve e diretto",
+      "testo": "Spiegazione concreta, max 2 righe, dati specifici dove disponibili",
+      "tag": "opportunità|attenzione|da fare|stop|info"
+    }
+  ],
+  "aggiornato": "timestamp ISO"
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
-    const top = Object.entries(freq).sort((a,b) => b[1]-a[1])[0];
-    if (!top) return '—';
-    const short = top[0].split(' ')[0] + '...';
-    return short;
+
+    const data = await resp.json();
+    const raw = data.content[0].text.trim().replace(/```json|```/g,'').trim();
+    const result = JSON.parse(raw);
+
+    // Salva insights
+    save('insights', result.insights || []);
+    save('insights_ts', new Date().toISOString());
+
+    renderInsights();
+    addLog(`Insights aggiornati — ${result.insights?.length || 0} osservazioni`, 'ok');
+
+  } catch(e) {
+    body.innerHTML = '<div class="empty-state">Errore analisi: ' + e.message + '</div>';
+    addLog('Errore insights: ' + e.message, 'err');
   }
 
-  function exportCSV() {
-    const responses = JSON.parse(localStorage.getItem('maxx_responses') || '[]');
-    if (!responses.length) return alert('Nessuna risposta da esportare.');
-    const keys = Object.keys(questions);
-    const header = ['Timestamp', ...Object.values(questions)].join(';');
-    const rows = responses.map(r => [r.timestamp, ...keys.map(k => '"' + (r[k] || '') + '"')].join(';'));
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'maxxissimo-feedback.csv'; a.click();
+  btn.disabled = false;
+  btn.textContent = '⟳ Analizza';
+}
+
+function renderInsights() {
+  const insights = load('insights');
+  const ts = localStorage.getItem('crp_insights_ts');
+  const body = document.getElementById('insights-body');
+  const cnt = document.getElementById('cnt-insights');
+
+  cnt.textContent = insights.length;
+
+  if(!insights.length) {
+    body.innerHTML = '<div class="empty-state">Nessun insight ancora.<br>Clicca "Analizza" dopo aver inserito dati nelle altre sezioni.</div>';
+    return;
   }
 
-  // Init slider
-  updateSlider();
-  checkNext(4);
+  const iconMap = { opportunity:'◆', warning:'▲', action:'→', stop:'✕', info:'○' };
+  const classMap = { opportunity:'', warning:'warn', action:'purple', stop:'danger', info:'' };
+  const tagClassMap = { 'opportunità':'tag-opportunity', 'attenzione':'tag-warning', 'da fare':'tag-action', 'stop':'tag-stop', 'info':'tag-info' };
+
+  const tsStr = ts ? new Date(ts).toLocaleString('it-IT') : '';
+
+  body.innerHTML = insights.map(ins => `
+    <div class="insight-card ${classMap[ins.tipo]||''}">
+      <div class="insight-icon">${iconMap[ins.tipo]||'○'}</div>
+      <div class="insight-body">
+        <div class="insight-title">${ins.titolo}</div>
+        <div class="insight-text">${ins.testo}</div>
+        ${ins.tag ? `<span class="insight-tag ${tagClassMap[ins.tag]||'tag-info'}">${ins.tag}</span>` : ''}
+      </div>
+    </div>`).join('') +
+    (tsStr ? `<div class="insights-meta">Ultimo aggiornamento: ${tsStr}</div>` : '');
+}
+
+
+function addLog(msg, type='') {
+  const logs = load('log');
+  const now = new Date();
+  const time = now.toTimeString().slice(0,5);
+  logs.unshift({ time, msg, type });
+  if(logs.length > 30) logs.pop();
+  save('log', logs);
+  renderLog();
+}
+
+function renderLog() {
+  const logs = load('log');
+  const el = document.getElementById('agent-log');
+  if(!logs.length) { el.innerHTML = ''; return; }
+  el.innerHTML = logs.slice(0,8).map(l =>
+    `<div class="log-entry"><span class="log-time">${l.time}</span><span class="log-msg ${l.type||''}">${l.msg}</span></div>`
+  ).join('');
+}
+
+// ===================== CLOCK =====================
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('it-IT');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===================== INIT =====================
+render();
+renderLog();
+renderInsights();
 </script>
-
 </body>
 </html>
