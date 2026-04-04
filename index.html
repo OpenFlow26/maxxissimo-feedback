@@ -550,22 +550,23 @@
 <header>
   <div class="logo">CFD <span>Regime</span> Profiler</div>
   <div class="header-meta">
-    <div class="status-dot" id="api-dot" style="background:var(--text3);box-shadow:none"></div>
+    <div class="status-dot" id="api-dot" style="background:var(--warn);box-shadow:0 0 8px var(--warn)"></div>
     <div class="clock" id="clock">--:--:--</div>
-    <button class="btn-add" onclick="toggleApiPanel()" id="api-btn" style="font-size:10px">⚙ API Key</button>
+    <button class="btn-add" onclick="toggleApiPanel()" id="api-btn" style="font-size:10px; color:var(--warn); border-color:rgba(240,160,32,0.4)">⚙ API Key</button>
   </div>
 </header>
 
 <!-- API KEY PANEL -->
-<div id="api-panel" style="display:none; background:var(--bg2); border-bottom:1px solid var(--border); padding:12px 32px; align-items:center; gap:12px; position:relative; z-index:99;">
+<div id="api-panel" style="display:none; background:var(--bg2); border-bottom:1px solid var(--border); padding:12px 32px; flex-direction:row; align-items:center; gap:12px; position:relative; z-index:99;">
   <span style="font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap;">Anthropic API Key</span>
   <input id="api-key-input" type="password"
     placeholder="sk-ant-api03-..."
-    style="flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:3px; color:var(--text); font-family:var(--mono); font-size:12px; padding:7px 12px; outline:none; min-width:0;"
+    style="flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:3px; color:var(--text); font-family:var(--mono); font-size:12px; padding:7px 12px; outline:none; min-width:200px;"
     oninput="saveApiKey(this.value)">
-  <span style="font-size:10px; color:var(--text3); white-space:nowrap;">Salvata solo nel browser · non viene trasmessa ad altri</span>
+  <span style="font-size:10px; color:var(--text3); white-space:nowrap;">Salvata solo nel browser</span>
   <a href="https://console.anthropic.com/settings/keys" target="_blank"
     style="font-size:10px; color:var(--accent); text-decoration:none; white-space:nowrap;">Ottieni key →</a>
+  <button class="btn-add" onclick="toggleApiPanel()" style="font-size:10px">✕ Chiudi</button>
 </div>
 
 <div class="main">
@@ -1249,7 +1250,7 @@ function toggleApiPanel() {
   const input = document.getElementById('api-key-input');
   const isOpen = panel.style.display === 'flex';
   panel.style.display = isOpen ? 'none' : 'flex';
-  if(!isOpen) { input.value = getApiKey(); input.focus(); }
+  if(!isOpen) { input.value = getApiKey(); setTimeout(()=>input.focus(),50); }
 }
 
 // ===================== CLOCK =====================
